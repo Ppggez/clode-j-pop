@@ -8,6 +8,6 @@ function sumPrice(prices) {
     return total;
 }
 function calcTax(total) {
-    return total * 0.07;
+    return Math.round(total * 0.07 * 100) / 100;
 }
 exports.Utils = { sumPrice, calcTax };
