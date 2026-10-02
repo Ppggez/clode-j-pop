@@ -1,0 +1,11 @@
+name: main
+on: [push]
+jobs:
+  print-text:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Print text from file.txt
+        run: cat dist/index.js
