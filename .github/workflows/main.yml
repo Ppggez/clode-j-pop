@@ -1,11 +1,35 @@
 name: main
 on: [push]
 jobs:
-  print-text:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Print text from file.txt
-        run: cat dist/index.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Unit Test
+        run: |
+          output=$(node dist/UnitTest.js)
+          if [ $output -ne 0 ]; then
+            echo "Unit test failed"
+            exit 1
+          fi
+
+      - name: Run Integration Test
+        run: |
+          output=$(node dist/IntegrationTest.js)
+          if [ $output -ne 0 ]; then
+            echo "Integration test failed"
+            exit 1
+          fi
