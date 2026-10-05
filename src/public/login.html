@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ลงทะเบียนผู้ใช้</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --border: #e4e8f0;
+      --text: #172033;
+      --muted: #6b7489;
+      --primary: #3b5bdb;
+      --primary-hover: #324dbb;
+      --primary-soft: #edf1ff;
+      --danger: #d64545;
+      --danger-soft: #fdeeee;
+      --success: #2f9e66;
+      --success-soft: #eaf7f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans Thai", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #e9eefb 0%, var(--bg) 320px);
+    }
+    .page { max-width: 1040px; margin: 0 auto; padding: 40px 16px 56px; }
+
+    header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+    .logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--primary); color: #fff;
+      display: grid; place-items: center; font-weight: 600; font-size: 20px;
+    }
+    header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+    .layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+    .card h2 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+    .card .sub { margin: 0 0 20px; color: var(--muted); font-size: 13px; }
+
+    label { display: block; margin-bottom: 14px; font-size: 14px; font-weight: 500; }
+    input {
+      width: 100%; margin-top: 6px; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font: inherit; font-size: 15px; color: var(--text); background: #fbfcfe;
+    }
+    input::placeholder { color: #a3aabb; }
+    input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-soft); }
+
+    .btn-primary {
+      width: 100%; margin-top: 4px; padding: 11px;
+      border: none; border-radius: 8px; background: var(--primary); color: #fff;
+      font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .message { margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
+    .message.error { display: block; background: var(--danger-soft); color: var(--danger); }
+    .message.success { display: block; background: var(--success-soft); color: var(--success); }
+
+    .list-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .count { background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+    .table-wrap { overflow-x: auto; margin: 0 -24px -24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 12px 24px; border-top: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; font-size: 12px; background: #fafbfd; }
+    td.num, th.num { text-align: right; }
+    td.actions, th.actions { text-align: right; width: 1%; }
+    tr.new td { background: var(--success-soft); }
+
+    .user { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center; font-weight: 600; font-size: 14px;
+    }
+    .user-name { font-weight: 500; }
+    .email { color: var(--muted); }
+
+    .btn-delete {
+      padding: 6px 12px; border-radius: 6px; cursor: pointer;
+      font: inherit; font-size: 13px;
+      border: 1px solid var(--border); background: #fff; color: var(--muted);
+    }
+    .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-delete.confirm { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+    .empty { text-align: center; color: var(--muted); padding: 40px 24px; white-space: normal; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">U</div>
+      <div>
+        <h1>ระบบลงทะเบียนผู้ใช้</h1>
+        <p>เพิ่มและจัดการรายชื่อผู้ใช้ในระบบ</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div class="card">
+        <h2>เพิ่มผู้ใช้ใหม่</h2>
+        <p class="sub">กรอกข้อมูลให้ครบทุกช่อง</p>
+        <form id="registerForm">
+          <label>ชื่อ
+            <input type="text" name="name" placeholder="เช่น สมชาย" required>
+          </label>
+          <label>อีเมล
+            <input type="email" name="email" placeholder="name@example.com" required>
+          </label>
+          <label>รหัสผ่าน
+            <input type="password" name="password" placeholder="••••••" required>
+          </label>
+          <label>อายุ
+            <input type="number" name="age" min="1" max="150" placeholder="เช่น 20" required>
+          </label>
+          <button class="btn-primary" type="submit">บันทึก</button>
+        </form>
+        <div id="message" class="message"></div>
+      </div>
+
+      <div class="card">
+        <div class="list-header">
+          <div>
+            <h2>รายชื่อผู้ใช้</h2>
+            <p class="sub">ผู้ใช้ที่ลงทะเบียนล่าสุดอยู่ด้านบน</p>
+          </div>
+          <span class="count" id="count">0 คน</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ชื่อ</th><th>อีเมล</th><th class="num">อายุ</th><th class="actions"></th></tr>
+            </thead>
+            <tbody id="userList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const message = document.getElementById('message');
+    const userList = document.getElementById('userList');
+
+    const avatarColors = [
+      ['#edf1ff', '#3b5bdb'], ['#eaf7f0', '#2f9e66'], ['#fff4e5', '#c76a00'],
+      ['#f3edff', '#7048e8'], ['#e7f6fb', '#1c7ea6'], ['#fdeef4', '#c2255c'],
+    ];
+
+    const showMessage = (text, type) => {
+      message.textContent = text;
+      message.className = 'message ' + type;
+    };
+
+    const el = (tag, className, text) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    };
+
+    const colorFor = (name) => {
+      let sum = 0;
+      for (const ch of name) sum += ch.codePointAt(0);
+      return avatarColors[sum % avatarColors.length];
+    };
+
+    const deleteUser = async (user, button) => {
+      // กดครั้งแรกให้ยืนยันก่อน กดซ้ำภายใน 3 วินาทีถึงจะลบจริง
+      if (!button.classList.contains('confirm')) {
+        button.classList.add('confirm');
+        button.textContent = 'ยืนยันลบ';
+        setTimeout(() => {
+          button.classList.remove('confirm');
+          button.textContent = 'ลบ';
+        }, 3000);
+        return;
+      }
+      try {
+        const response = await fetch('/api/users/' + user._id, { method: 'DELETE' });
+        if (!response.ok) {
+          showMessage('ลบไม่สำเร็จ', 'error');
+          return;
+        }
+        showMessage('ลบ ' + user.name + ' แล้ว', 'success');
+        loadUsers();
+      } catch (err) {
+        showMessage('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'error');
+      }
+    };
+
+    const renderRow = (user, isNew) => {
+      const tr = el('tr', isNew ? 'new' : '');
+
+      const nameCell = el('td');
+      const wrap = el('div', 'user');
+      const avatar = el('div', 'avatar', (user.name || '?').charAt(0).toUpperCase());
+      const [bg, fg] = colorFor(user.name || '?');
+      avatar.style.background = bg;
+      avatar.style.color = fg;
+      wrap.append(avatar, el('span', 'user-name', user.name));
+      nameCell.appendChild(wrap);
+
+      const actionCell = el('td', 'actions');
+      const delBtn = el('button', 'btn-delete', 'ลบ');
+      delBtn.type = 'button';
+      delBtn.addEventListener('click', () => deleteUser(user, delBtn));
+      actionCell.appendChild(delBtn);
+
+      tr.append(
+        nameCell,
+        el('td', 'email', user.email),
+        el('td', 'num', user.age ?? '-'),
+        actionCell
+      );
+      return tr;
+    };
+
+    const loadUsers = async (newId) => {
+      try {
+        const response = await fetch('/api/users');
+        const users = await response.json();
+        users.reverse(); // คนล่าสุดอยู่บนสุด
+
+        userList.innerHTML = '';
+        document.getElementById('count').textContent = users.length + ' คน';
+
+        if (users.length === 0) {
+          const tr = el('tr');
+          const td = el('td', 'empty', 'ยังไม่มีผู้ใช้ เพิ่มคนแรกจากฟอร์มด้านซ้าย');
+          td.colSpan = 4;
+          tr.appendChild(td);
+          userList.appendChild(tr);
+          return;
+        }
+
+        users.forEach(user => userList.appendChild(renderRow(user, user._id === newId)));
+      } catch (err) {
+        showMessage('โหลดรายชื่อไม่ได้ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'error');
+      }
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      data.age = Number(data.age);
+      try {
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          const duplicate = result.error && result.error.code === 11000;
+          showMessage(duplicate ? 'อีเมลนี้ถูกใช้แล้ว' : 'บันทึกไม่สำเร็จ: ' + result.message, 'error');
+          return;
+        }
+        form.reset();
+        showMessage('บันทึก ' + result.name + ' เรียบร้อย', 'success');
+        loadUsers(result._id);
+      } catch (err) {
+        showMessage('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'error');
+      }
+    });
+
+    loadUsers();
+  </script>
+</body>
+</html>
