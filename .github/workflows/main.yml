@@ -41,3 +41,11 @@ jobs:
             echo "UserController test failed"
             exit 1
           fi
+
+      - name: Run UserValidator Test
+        run: |
+          output=$(node dist/UserValidatorTest.js)
+          if [ $output -ne 0 ]; then
+            echo "UserValidator test failed"
+            exit 1
+          fi

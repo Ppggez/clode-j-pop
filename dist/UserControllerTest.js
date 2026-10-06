@@ -42,8 +42,28 @@ const tests = [
         run: () => __awaiter(void 0, void 0, void 0, function* () {
             UserMock.prototype.save = fail;
             const res = mockRes();
-            yield (0, UserController_1.createUser)(mockReq({}, { name: 'Ann' }), res);
+            yield (0, UserController_1.createUser)(mockReq({}, { name: 'Ann', email: 'ann@example.com', password: '1234', age: 20 }), res);
             return res.statusCode === 500;
+        }),
+    },
+    {
+        name: 'createUser returns 400 and does not save when name has space',
+        run: () => __awaiter(void 0, void 0, void 0, function* () {
+            let saved = false;
+            UserMock.prototype.save = function () {
+                return __awaiter(this, void 0, void 0, function* () { saved = true; return this; });
+            };
+            const res = mockRes();
+            yield (0, UserController_1.createUser)(mockReq({}, { name: 'Ann B', email: 'ann@example.com', password: '1234', age: 20 }), res);
+            return res.statusCode === 400 && res.body.errors.includes('name must not contain spaces') && !saved;
+        }),
+    },
+    {
+        name: 'createUser returns 400 when age is not a number',
+        run: () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = mockRes();
+            yield (0, UserController_1.createUser)(mockReq({}, { name: 'Ann', email: 'ann@example.com', password: '1234', age: 'abc' }), res);
+            return res.statusCode === 400 && res.body.errors.includes('age must be a whole number');
         }),
     },
     {
@@ -107,6 +127,16 @@ const tests = [
             const res = mockRes();
             yield (0, UserController_1.updateUser)(mockReq({ id: '2' }, { age: 21 }), res);
             return res.statusCode === 404;
+        }),
+    },
+    {
+        name: 'updateUser returns 400 and does not update when age is invalid',
+        run: () => __awaiter(void 0, void 0, void 0, function* () {
+            let updated = false;
+            UserMock.findByIdAndUpdate = () => __awaiter(void 0, void 0, void 0, function* () { updated = true; return fakeUser; });
+            const res = mockRes();
+            yield (0, UserController_1.updateUser)(mockReq({ id: '1' }, { age: 'abc' }), res);
+            return res.statusCode === 400 && !updated;
         }),
     },
     {

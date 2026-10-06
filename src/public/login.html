@@ -266,7 +266,9 @@
         const result = await response.json();
         if (!response.ok) {
           const duplicate = result.error && result.error.code === 11000;
-          showMessage(duplicate ? 'อีเมลนี้ถูกใช้แล้ว' : 'บันทึกไม่สำเร็จ: ' + result.message, 'error');
+          if (duplicate) showMessage('อีเมลนี้ถูกใช้แล้ว', 'error');
+          else if (result.errors) showMessage('ข้อมูลไม่ถูกต้อง: ' + result.errors.join(', '), 'error');
+          else showMessage('บันทึกไม่สำเร็จ: ' + result.message, 'error');
           return;
         }
         form.reset();

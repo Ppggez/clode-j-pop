@@ -10,7 +10,7 @@
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "tsc && node dist/UnitTest.js && node dist/IntegrationTest.js && node dist/UserControllerTest.js"
+    "test": "tsc && node dist/UnitTest.js && node dist/IntegrationTest.js && node dist/UserControllerTest.js && node dist/UserValidatorTest.js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

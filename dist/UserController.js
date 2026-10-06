@@ -14,7 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUser = exports.deleteUser = exports.getUserById = exports.getUsers = exports.createUser = void 0;
 const User_1 = __importDefault(require("./User"));
+const UserValidator_1 = require("./UserValidator");
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errors = (0, UserValidator_1.validateUser)(req.body);
+    if (errors.length > 0) {
+        return res.status(400).json({ message: 'Validation failed', errors });
+    }
     try {
         const { name, email, password, age } = req.body;
         const newUser = new User_1.default({ name, email, password, age });
@@ -65,6 +70,10 @@ exports.deleteUser = deleteUser;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const updateData = req.body;
+    const errors = (0, UserValidator_1.validateUser)(updateData, true);
+    if (errors.length > 0) {
+        return res.status(400).json({ message: 'Validation failed', errors });
+    }
     try {
         const updatedUser = yield User_1.default.findByIdAndUpdate(id, updateData, {
             new: true, // resend update data

@@ -31,8 +31,26 @@ const tests: { name: string; run: () => Promise<boolean> }[] = [
     run: async () => {
       UserMock.prototype.save = fail;
       const res = mockRes();
-      await createUser(mockReq({}, { name: 'Ann' }), res);
+      await createUser(mockReq({}, { name: 'Ann', email: 'ann@example.com', password: '1234', age: 20 }), res);
       return res.statusCode === 500;
+    },
+  },
+  {
+    name: 'createUser returns 400 and does not save when name has space',
+    run: async () => {
+      let saved = false;
+      UserMock.prototype.save = async function () { saved = true; return this; };
+      const res = mockRes();
+      await createUser(mockReq({}, { name: 'Ann B', email: 'ann@example.com', password: '1234', age: 20 }), res);
+      return res.statusCode === 400 && res.body.errors.includes('name must not contain spaces') && !saved;
+    },
+  },
+  {
+    name: 'createUser returns 400 when age is not a number',
+    run: async () => {
+      const res = mockRes();
+      await createUser(mockReq({}, { name: 'Ann', email: 'ann@example.com', password: '1234', age: 'abc' }), res);
+      return res.statusCode === 400 && res.body.errors.includes('age must be a whole number');
     },
   },
   {
@@ -99,6 +117,16 @@ const tests: { name: string; run: () => Promise<boolean> }[] = [
     },
   },
   {
+    name: 'updateUser returns 400 and does not update when age is invalid',
+    run: async () => {
+      let updated = false;
+      UserMock.findByIdAndUpdate = async () => { updated = true; return fakeUser; };
+      const res = mockRes();
+      await updateUser(mockReq({ id: '1' }, { age: 'abc' }), res);
+      return res.statusCode === 400 && !updated;
+    },
+  },
+  {
     name: 'updateUser returns 500 when db fails',
     run: async () => {
       UserMock.findByIdAndUpdate = fail;
@@ -132,7 +160,7 @@ const user_controller_test = async () => {
   for (const test of tests) {
     if (!(await test.run())) {
       failed++;
-      console.error('FAIL: ' + test.name); // stderr ไม่ไปปนกับผล 0/1 ที่ workflow อ่าน
+      console.error('FAIL: ' + test.name); 
     }
   }
   console.log(failed === 0 ? 0 : 1);

@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
 import User from './User';
+import { validateUser } from './UserValidator';
 
 
 export const createUser = async (req: Request, res: Response) => {
+  const errors = validateUser(req.body);
+  if (errors.length > 0) {
+    return res.status(400).json({ message: 'Validation failed', errors });
+  }
+
   try {
     const { name, email, password, age } = req.body;
     const newUser = new User({ name, email, password, age });
@@ -52,6 +58,11 @@ export const deleteUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const updateData = req.body;
+
+  const errors = validateUser(updateData, true);
+  if (errors.length > 0) {
+    return res.status(400).json({ message: 'Validation failed', errors });
+  }
 
   try {
     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
