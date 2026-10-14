@@ -172,7 +172,7 @@ const user_controller_test = () => __awaiter(void 0, void 0, void 0, function* (
     for (const test of tests) {
         if (!(yield test.run())) {
             failed++;
-            console.error('FAIL: ' + test.name); // stderr ไม่ไปปนกับผล 0/1 ที่ workflow อ่าน
+            console.error('FAIL: ' + test.name);
         }
     }
     console.log(failed === 0 ? 0 : 1);

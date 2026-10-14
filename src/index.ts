@@ -8,30 +8,40 @@ import path from 'path';
 const app = express();
 const port = process.env.PORT || 3001;
 
-// connection string อยู่ใน config.json (ไม่ขึ้น GitHub) ถ้าไม่มีไฟล์ใช้ MONGO_URI หรือ local แทน
+// ใช้ MONGO_URI ก่อน (docker-compose ตั้งให้) ถ้าไม่มีค่อยอ่าน config.json (ไม่ขึ้น GitHub) หรือ local แทน
 const configPath = path.join(__dirname, 'config.json');
-const mongoUri: string = fs.existsSync(configPath)
-  ? JSON.parse(fs.readFileSync(configPath, { encoding: 'utf8', flag: 'r' })).connection
-  : process.env.MONGO_URI || 'mongodb://localhost:27017/mydb';
+const mongoUri: string = process.env.MONGO_URI
+  || (fs.existsSync(configPath)
+    ? JSON.parse(fs.readFileSync(configPath, { encoding: 'utf8', flag: 'r' })).connection
+    : 'mongodb://localhost:27017/mydb');
 
 // Middleware
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+// ไฟล์ html อยู่ที่ src/public (tsc ไม่ copy ไป dist) ใช้ได้ทั้งตอนรันจาก src และ dist
+app.use(express.static(path.join(__dirname, '..', 'src', 'public')));
 
 // Routes
 app.use('/api', userRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, World!');
+  // SERVER_NAME ตั้งใน docker-compose.yml เพื่อดูว่า request ไปตกที่ server ตัวไหน
+  res.send(`Lab multiweb  ${process.env.SERVER_NAME || 'server'}`);
+});
+
+// ให้ docker healthcheck เรียกเช็คว่า server ยังทำงานอยู่
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
+// เปิด server ก่อนเสมอ ถึงจะต่อ MongoDB ไม่ได้ (เช่นบน Azure ที่ไม่มี DB) หน้าเว็บก็ยังขึ้น
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
 
 mongoose.connect(mongoUri)
   .then(() => {
     console.log('Connected to MongoDB');
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
   })
   .catch(err => {
     console.error('Error connecting to MongoDB:', err);

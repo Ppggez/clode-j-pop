@@ -19,18 +19,20 @@ const mongoUri = fs_1.default.existsSync(configPath)
 // Middleware
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
-app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
+// ไฟล์ html อยู่ที่ src/public (tsc ไม่ copy ไป dist) ใช้ได้ทั้งตอนรันจาก src และ dist
+app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'src', 'public')));
 // Routes
 app.use('/api', UserRoutes_1.default);
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
+// เปิด server ก่อนเสมอ ถึงจะต่อ MongoDB ไม่ได้ (เช่นบน Azure ที่ไม่มี DB) หน้าเว็บก็ยังขึ้น
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 mongoose_1.default.connect(mongoUri)
     .then(() => {
     console.log('Connected to MongoDB');
-    app.listen(port, () => {
-        console.log(`Server is running on port ${port}`);
-    });
 })
     .catch(err => {
     console.error('Error connecting to MongoDB:', err);
